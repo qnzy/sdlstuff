@@ -5,8 +5,8 @@
 
 #include "yekgfx.h"
 
-#define WIDTH 640
-#define HEIGHT 480
+#define WIDTH 1920
+#define HEIGHT 1080
 
 #define TEXWIDTH 256
 
@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
   /* palette */
   SDL_Color myPalette[256];
   int cosTable[256];
-  int t0,t,told;
+  int t0,t,told,print_t;
   float indexfactor;
   int colorx[TEXWIDTH],colory[TEXWIDTH];
   /* factors for cosine function */
@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
   int index;
   float camx,camy,deltax,deltay;
   int c;
-  long  int countframes;
+  long  int countframes, printframes;
   deltax=0.1;deltay=0.05;
   if ((angleTable=(float*)malloc(2*WIDTH*2*HEIGHT*sizeof(float)))==NULL)
     {
@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
   texture=SDL_CreateRGBSurface(SDL_SWSURFACE,TEXWIDTH,TEXWIDTH,8,0,0,0,1);
   //xortexture8(texture); 
   sinpalette(myPalette,0,1,0,64,64,32);   
-  // sinpalette(myPalette,1,1,1,128,64,32);   
+   //sinpalette(myPalette,1,1,1,128,64,32);   
   ratio=32;
   for (x=0;x<2*WIDTH;x++)
     {
@@ -122,6 +122,8 @@ int main(int argc, char *argv[])
 
   t=0;
   countframes=0;
+  printframes = countframes;
+  print_t = t;
   t0=SDL_GetTicks();
 
   while( !quit)
@@ -156,8 +158,10 @@ int main(int argc, char *argv[])
       moveval(&camy,&deltay,t-told,HEIGHT*0.25,HEIGHT*0.75);
       //  camx=WIDTH/2.0+(int)(0.5*WIDTH/2.0*sin(0.2*t/1000.0));
       //  camy=HEIGHT/2.0+(int)(0.5*HEIGHT/2.0*sin(0.2*t/1000.0*2.0));
-      fract2=t/5.0;
+      fract2=fmod(t/5.0,texture->h);
       fract1=100*sin(t/1000.0)+256*sin(t/2000.0);
+      //fract2=0;
+      //fract1=100*sin(0/1000.0)+256*sin(0/2000.0);
       plasma8_2(texture,0,0,TEXWIDTH/2-1,TEXWIDTH/2-1,t/10,coeffs1,1,
 		cosTable,colorx,colory);
       plasma8_2(texture,0,TEXWIDTH/2,TEXWIDTH/2-1,TEXWIDTH-1,t/10,coeffs1,1,
@@ -185,6 +189,11 @@ int main(int argc, char *argv[])
 
       SDL_Flip(screen);
       countframes++;
+      if (countframes - printframes > 100) {
+          //printf("fps: %f\n", 1000.0*(countframes-printframes)/(t-print_t));
+          print_t = t;
+          printframes = countframes;
+      }
 
     }
   t=SDL_GetTicks()-t0;
